@@ -4,6 +4,8 @@
 
 Joseca Bot es un bot diseñado para interactuar con la API de Telegram, permitiendo a los usuarios realizar diversas acciones a través de comandos.
 
+[¡Habla con el bot!](https://t.me/jose20025_bot)
+
 ## Estructura del Proyecto
 
 El proyecto está organizado de la siguiente manera:
