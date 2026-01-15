@@ -1,25 +1,35 @@
 import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 import { TelegramMessage } from './interfaces/telegram';
 
-export class CommandHandler {
-	private geminiAI: GoogleGenAI;
+let gemini: GoogleGenAI | null = null;
 
+function getGemini(geminiApiKey: string) {
+	if (!gemini) gemini = new GoogleGenAI({ apiKey: geminiApiKey });
+	return gemini;
+}
+
+export class CommandHandler {
 	constructor(
-		private apiKey: string,
+		private telegramBotToken: string,
 		private db: D1Database,
-		geminiApiKey: string
-	) {
-		this.geminiAI = new GoogleGenAI({ apiKey: geminiApiKey });
-		console.log('Gemini AI initialized');
+		private geminiApiKey: string
+	) {}
+
+	private get ai() {
+		return getGemini(this.geminiApiKey);
 	}
 
 	private sendMessage = async (chatId: number, message: string) => {
-		try {
-			const url = `https://api.telegram.org/bot${this.apiKey}/sendMessage?chat_id=${chatId}&text=${message}`;
-			await fetch(url);
-		} catch (error) {
-			console.error('Error al enviar mensaje:', error);
-			throw error;
+		const url = `https://api.telegram.org/bot${this.telegramBotToken}/sendMessage`;
+		const res = await fetch(url, {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({ chat_id: chatId, text: message }),
+		});
+
+		if (!res.ok) {
+			const body = await res.text().catch(() => '');
+			throw new Error(`Telegram error ${res.status}: ${body}`);
 		}
 	};
 
@@ -89,7 +99,7 @@ export class CommandHandler {
 				return new Response('Ok');
 			}
 
-			const response = await this.geminiAI.models.generateContent({
+			const response = await this.ai.models.generateContent({
 				model: 'gemini-3-flash-preview',
 				contents: [
 					{

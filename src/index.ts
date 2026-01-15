@@ -4,7 +4,6 @@ import type { TelegramRequest } from './interfaces/telegram';
 export default {
 	async fetch(request, env, ctx) {
 		if (request.method === 'POST') {
-			const apiKey = env.API_KEY;
 			const payload = (await request.json()) as TelegramRequest;
 
 			if (payload.message) {
@@ -15,7 +14,7 @@ export default {
 				if (isCommand) {
 					const command = text?.split('/')[1].split(' ')[0];
 					const commandHandler = new CommandHandler(
-						apiKey,
+						env.TELEGRAM_BOT_TOKEN,
 						env.DB,
 						env.GEMINI_API_KEY
 					);
