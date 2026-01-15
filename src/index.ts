@@ -1,4 +1,5 @@
 import type { TelegramRequest } from './interfaces/telegram';
+import { sendMessage } from './utils/send-message';
 
 export default {
 	async fetch(request, env, ctx) {
@@ -8,8 +9,11 @@ export default {
 			if (payload.message) {
 				const { chat, text } = payload.message;
 
-				const url = `https://api.telegram.org/bot${env.API_KEY}/sendMessage?chat_id=${chat.id}&text=${text}`;
-				await fetch(url);
+				await sendMessage(
+					env.API_KEY,
+					chat.id,
+					`Cooj, dijiste: ${text ?? '<no text>'}`
+				);
 			}
 		}
 
