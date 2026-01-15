@@ -6,10 +6,17 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "joseca-bot",
 	"main": "src/index.ts",
-	"compatibility_date": "2025-09-27",
+	"compatibility_date": "2026-01-15",
 	"observability": {
 		"enabled": true
-	}
+	},
+	"preview_urls": false,
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_id": "9f0253e2-15ca-44ad-a790-b5cb40a58a20"
+		}
+	]
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
