@@ -63,6 +63,14 @@ export class CommandHandler {
 
 		const question = text?.replace('/8ball', '').trim();
 
+		if (!question) {
+			await this.sendMessage(
+				chat.id,
+				'Por favor, haz una pregunta después del comando /8ball.'
+			);
+			return new Response('Ok');
+		}
+
 		console.log('Consultando a Gemini...');
 		console.log({ question });
 
@@ -73,7 +81,7 @@ export class CommandHandler {
 					role: 'model',
 					parts: [
 						{
-							text: 'Eres una bola 8 mágica que responde de forma breve y concisa. Sin negritas. Evita el markdown. Todas las respuestas deben ser en español. Todo es jugando, no tomes en serio las preguntas. Selecciona aleatoriamente entre respuestas positivas o negativas, no neutras. Responde solo con la respuesta, complementando la pregunta, por ejemplo: ¿Soy inteligente? => No, no eres inteligente.',
+							text: 'Eres una bola 8 mágica que responde de forma breve y concisa. Sin negritas. Evita el markdown. Todas las respuestas deben ser en español. Todo es jugando, no tomes en serio las preguntas. Selecciona aleatoriamente entre respuestas positivas o negativas, no neutras. Responde solo con la respuesta, complementando la pregunta, por ejemplo: ¿Soy inteligente? => No, no eres inteligente. Terminar la respuesta con "🎱 Hmm, mi bola 8 mágica dice:"',
 						},
 					],
 				},
