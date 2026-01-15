@@ -13,13 +13,24 @@ export default {
 				const isCommand = text?.startsWith('/');
 
 				if (isCommand) {
-					const command = text?.split('/')[1];
-					const commandHandler = new CommandHandler(apiKey, env.DB);
+					const command = text?.split('/')[1].split(' ')[0];
+					const commandHandler = new CommandHandler(
+						apiKey,
+						env.DB,
+						env.GEMINI_API_KEY
+					);
+
+					console.log({ command });
 
 					switch (command) {
 						case 'start':
 							await commandHandler.startCommand(payload.message);
 							break;
+
+						case '8ball':
+							await commandHandler.eigthBallCommand(payload.message);
+							break;
+
 						default:
 							break;
 					}

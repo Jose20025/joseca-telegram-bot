@@ -1,7 +1,17 @@
+import { GoogleGenAI } from '@google/genai';
 import { TelegramMessage } from './interfaces/telegram';
 
 export class CommandHandler {
-	constructor(private apiKey: string, private db: D1Database) {}
+	private geminiAI: GoogleGenAI;
+
+	constructor(
+		private apiKey: string,
+		private db: D1Database,
+		geminiApiKey: string
+	) {
+		this.geminiAI = new GoogleGenAI({ apiKey: geminiApiKey });
+		console.log('Gemini AI initialized');
+	}
 
 	private sendMessage = async (chatId: number, message: string) => {
 		const url = `https://api.telegram.org/bot${this.apiKey}/sendMessage?chat_id=${chatId}&text=${message}`;
@@ -46,5 +56,43 @@ export class CommandHandler {
 				`Hubo un error al registrarte, ${from?.first_name}. Intenta de nuevo más tarde.`
 			);
 		}
+	}
+
+	async eigthBallCommand(message: TelegramMessage) {
+		const { chat, text } = message;
+
+		const question = text?.replace('/8ball', '').trim();
+
+		console.log('Consultando a Gemini...');
+		console.log({ question });
+
+		const response = await this.geminiAI.models.generateContent({
+			model: 'gemini-2.5-flash',
+			contents: [
+				{
+					role: 'model',
+					parts: [
+						{
+							text: 'Eres una bola 8 mágica que responde de forma breve y concisa. Sin negritas. Evita el markdown. Todas las respuestas deben ser en español. Todo es jugando, no tomes en serio las preguntas. Selecciona aleatoriamente entre respuestas positivas o negativas, no neutras. Responde solo con la respuesta, complementando la pregunta, por ejemplo: ¿Soy inteligente? => No, no eres inteligente.',
+						},
+					],
+				},
+				{
+					role: 'user',
+					parts: [
+						{
+							text: question || 'Sin pregunta',
+						},
+					],
+				},
+			],
+		});
+
+		await this.sendMessage(
+			chat.id,
+			response.text || 'No tengo una respuesta en este momento.'
+		);
+
+		return new Response('Ok');
 	}
 }
