@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 import { TelegramMessage } from './interfaces/telegram';
 
 export class CommandHandler {
@@ -79,58 +79,46 @@ export class CommandHandler {
 	async eigthBallCommand(message: TelegramMessage) {
 		try {
 			const { chat, text } = message;
-
 			const question = text?.replace('/8ball', '').trim();
 
 			if (!question) {
 				await this.sendMessage(
 					chat.id,
-					'Por favor, haz una pregunta después del comando /8ball.'
+					'🎱 Por favor, haz una pregunta después del comando.'
 				);
 				return new Response('Ok');
 			}
 
-			console.log('Consultando a Gemini...');
-			console.log({ question });
-
 			const response = await this.geminiAI.models.generateContent({
-				model: 'gemini-2.5-flash',
+				model: 'gemini-3-flash-preview',
 				contents: [
 					{
-						role: 'model',
-						parts: [
-							{
-								text: 'Eres una bola 8 mágica que responde de forma breve y concisa. Sin negritas. Evita el markdown. Todas las respuestas deben ser en español. Todo es jugando, no tomes en serio las preguntas. Selecciona aleatoriamente entre respuestas positivas o negativas, no neutras. Responde solo con la respuesta, complementando la pregunta, por ejemplo: ¿Soy inteligente? => No, no eres inteligente.',
-							},
-						],
-					},
-					{
 						role: 'user',
-						parts: [
-							{
-								text: question || 'Sin pregunta',
-							},
-						],
+						parts: [{ text: question }],
 					},
 				],
+				config: {
+					temperature: 1.0, // Para máxima aleatoriedad en la bola 8
+					maxOutputTokens: 60,
+					thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
+					systemInstruction:
+						'Eres una bola 8 mágica. Responde breve, en español, sin negritas ni markdown. Responde solo con la respuesta complementando la pregunta de forma aleatoria (positiva o negativa, no neutra).',
+				},
 			});
 
 			await this.sendMessage(
 				chat.id,
-				response.text || 'No tengo una respuesta en este momento.'
+				response.text || 'La bola está borrosa...'
 			);
-
 			return new Response('Ok');
-		} catch (error) {
-			console.error('Error en eigthBallCommand:', error);
-			try {
-				await this.sendMessage(
-					message.chat.id,
-					`Ocurrió un error al consultar la bola 8 mágica. Por favor, intenta de nuevo más tarde.`
-				);
-			} catch (sendError) {
-				console.error('Error al enviar mensaje de error:', sendError);
-			}
+		} catch (error: any) {
+			console.error('Error:', error);
+			// El SDK nuevo devuelve errores más limpios
+			const isRateLimit = error.message?.includes('429');
+			const msg = isRateLimit
+				? 'Demasiadas preguntas. La bola 8 necesita descansar 1 min.'
+				: 'Error mágico.';
+			await this.sendMessage(message.chat.id, msg);
 			return new Response('Error', { status: 500 });
 		}
 	}
