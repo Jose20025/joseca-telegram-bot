@@ -82,7 +82,7 @@ export class CommandHandler {
 			} catch (sendError) {
 				console.error('Error al enviar mensaje de error:', sendError);
 			}
-			return new Response('Error', { status: 500 });
+			return new Response('Ok');
 		}
 	}
 
@@ -129,7 +129,7 @@ export class CommandHandler {
 				? 'Demasiadas preguntas. La bola 8 necesita descansar 1 min.'
 				: 'Error mágico.';
 			await this.sendMessage(message.chat.id, msg);
-			return new Response('Error', { status: 500 });
+			return new Response('Ok');
 		}
 	}
 }
